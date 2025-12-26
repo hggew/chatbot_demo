@@ -1,0 +1,13 @@
+services:
+  chatbot-demo:
+    build: .
+    container_name: chatbot-demo
+    ports:
+      - "5173:5173"
+      - "2222:22"   # SSH 
+    volumes:
+      - ./:/app        
+      - /app/node_modules   
+    working_dir: /app
+    init: true
+    # command: ["sleep", "infinity"]  
