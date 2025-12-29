@@ -394,29 +394,61 @@ const useChatLogic = (setSelectedMachineId, setActiveMachineVideo) => {
   return { messages, setMessages, isTextLoading, setIsTextLoading, isMediaLoading, playAnswerSequence };
 };
 
+// local
+// const fetchOllamaAnswer = async (userQuestion) => {
+//   try {
+//     const response = await fetch("http://172.21.21.13:11435/api/chat", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({
+//         model: "gpt-oss:120b-cloud", // 또는 사용 중인 모델명 (예: 'mistral', 'gemma')
+//         messages: [
+//           {
+//             role: "user",
+//             content: `${userQuestion}\n\n5문장 이내로 답변해.`,
+//           },
+//         ],
+//         stream: false, // 단일 답변을 받기 위해 스트림 비활성화
+//       }),
+//     });
+
+//     if (!response.ok) throw new Error("Ollama API 연결 실패");
+//     const data = await response.json();
+//     return data.message.content;
+//   } catch (error) {
+//     console.error("Ollama Error:", error);
+//     return "죄송합니다. 현재 로컬 모델 서버에 연결할 수 없습니다.";
+//   }
+// };
+
 const fetchOllamaAnswer = async (userQuestion) => {
   try {
-    const response = await fetch("http://172.21.21.13:11435/api/chat", {
+    const response = await fetch("/api/ollama", { // Vercel API Route 상대 경로
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "gpt-oss:120b-cloud", // 또는 사용 중인 모델명 (예: 'mistral', 'gemma')
+        model: "gpt-oss:120b-cloud", // 실제 사용 중인 모델명으로 수정하세요
         messages: [
           {
             role: "user",
             content: `${userQuestion}\n\n5문장 이내로 답변해.`,
           },
         ],
-        stream: false, // 단일 답변을 받기 위해 스트림 비활성화
+        stream: false,
       }),
     });
 
-    if (!response.ok) throw new Error("Ollama API 연결 실패");
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Proxy API 연결 실패");
+    }
+
     const data = await response.json();
     return data.message.content;
   } catch (error) {
-    console.error("Ollama Error:", error);
-    return "죄송합니다. 현재 로컬 모델 서버에 연결할 수 없습니다.";
+    console.error("Ollama Error (via Proxy):", error);
+    // 사용자에게 노출될 에러 메시지
+    return "죄송합니다. 현재 사내 모델 서버에 접근할 수 없습니다. (네트워크 연결 확인 필요)";
   }
 };
 
