@@ -45,7 +45,7 @@ const INITIAL_CHAT_LIST = [
   { id: 5, title: "야간 교대조 설비 알람 로그 확인" },
 ];
 
-const HIDDEN_CHAT_ITEM_0 = { id: 0, title: "조선 팰리스 숙박 가격" };
+const HIDDEN_CHAT_ITEM_0 = { id: 0, title: "한국전자기술연구원 질문" };
 
 function useDotAnimation(active, intervalMs = 350) {
   const [dots, setDots] = useState("");
