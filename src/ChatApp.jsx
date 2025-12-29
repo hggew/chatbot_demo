@@ -427,7 +427,7 @@ const fetchOllamaAnswer = async (userQuestion) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "gpt-oss:120b-cloud", // 실제 사용 중인 모델명으로 수정하세요
+        model: "gpt-oss:120b-cloud",
         messages: [
           {
             role: "user",
