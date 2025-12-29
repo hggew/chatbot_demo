@@ -423,15 +423,16 @@ const useChatLogic = (setSelectedMachineId, setActiveMachineVideo) => {
 
 const fetchOllamaAnswer = async (userQuestion) => {
   try {
-    const response = await fetch("/api/ollama", { // Vercel API Route 상대 경로
+    const response = await fetch("https://seems-recommendations-silence-eat.trycloudflare.com/api/chat", { // Vercel API Route 상대 경로
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "llama3:8b",
+        // model: "llama3:8b",
+        model: "gpt-oss:120b-cloud",
         messages: [
           {
             role: "user",
-            content: `${userQuestion}\n\n5문장 이내로 답변해.`,
+            content: `${userQuestion}\n\n5문장 이내로 한국어로 답변해.`,
           },
         ],
         stream: false,
