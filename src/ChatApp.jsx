@@ -597,7 +597,8 @@ export default function ChatApp() {
                     <img src="/chat_icons/welcome.png" className="max-w-[60%] max-h-[60%] opacity-95" />
                   </div>
                 ) : (
-                  <div className="max-w-3xl mx-auto space-y-4 ">
+                  // <div className="max-w-3xl mx-auto space-y-4 ">
+                  <div className="max-w-5xl mx-auto px-6 space-y-4">
                     {messages.map((m, idx) => (
                       <ChatMessageRenderer
                         key={idx}
@@ -634,7 +635,8 @@ export default function ChatApp() {
           </div>
 
           <div className="px-10 pb-6 pt-3 bg-white">
-            <div className="max-w-3xl mx-auto">
+            {/* <div className="max-w-3xl mx-auto"> */}
+            <div className="max-w-5xl mx-auto">
               {filePreviews.length > 0 && (
                 <div className="mb-3 flex flex-wrap gap-2 p-2 border border-gray-200 rounded-lg bg-neutral-50">
                   {filePreviews.map((preview, index) => {

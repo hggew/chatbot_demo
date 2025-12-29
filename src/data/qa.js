@@ -281,39 +281,39 @@ export const qaMap = {
       
       {
         text: "네, 한국전자기술연구원(KETI)은 전자·ICT 분야 중심의 공공 성격 연구기관으로 알려져 있습니다.",
-        delay: 1200,
+        delay: 1000,
       },
       {
         text: "대학처럼 기초학문 중심이라기보다, 산업 현장에 바로 적용 가능한 실용화 중심 R&D에 강점이 있습니다.",
-        delay: 700,
+        delay: 650,
       },
       {
         text: "기업(특히 중소·중견기업)과 공동 연구를 수행하고 기술이전이나 상용화 지원을 하는 역할도 하는 것으로 알려져 있습니다.",
-        delay: 700,
+        delay: 650,
       },
       {
         text: "정부의 산업기술 R&D 과제와 연계된 연구를 수행하는 비중이 비교적 높은 편이라는 점도 자주 언급됩니다.",
-        delay: 700,
+        delay: 650,
       },
       {
         text: "연구 분야는 IoT/임베디드, 스마트팩토리, AI 기반 시스템, 자동차 전장·모빌리티, 로봇·자율시스템, 반도체·전자부품·센서, 전력전자·에너지, 통신·네트워크 등으로 폭넓게 연결됩니다.",
-        delay: 700,
+        delay: 650,
       },
       {
-        text: "다만 구체적인 조직 구조나 최신 중점 분야는 시기에 따라 바뀔 수 있어 uncertain(불확실)합니다.",
-        delay: 700,
+        text: "다만 구체적인 조직 구조나 최신 중점 분야는 시기에 따라 바뀔 수 있어 불확실합니다.",
+        delay: 600,
       },
       {
         text: "전체적으로는 연구 성과를 제품/시스템 형태로 구현해 산업에 적용되도록 “연구와 상용화 사이를 잇는” 기관으로 이해하시면 됩니다.",
-        delay: 700,
+        delay: 650,
       },
       {
         text: "기업 입장에서는 기술 개발, 시제품/검증, 실증, 기술이전 측면에서 협력 파트너가 될 수 있습니다.",
-        delay: 700,
+        delay: 600,
       },
       {
         text: "요약하면, KETI는 전자·ICT 기반 산업기술을 실용화 중심으로 개발하고 기업과 함께 산업 적용을 촉진하는 연구기관입니다.",
-        delay: 700,
+        delay: 650,
       },
 
     ],
@@ -529,18 +529,30 @@ export const qaList = Object.entries(qaMap).map(([q, a]) => ({ q, a }));
 
 export function getAnswerByQuestion(input) {
   const normalized = input.trim();
-  const found = qaMap[normalized];
-  return (
-    found ?? {
-      answer: [
-        {
-          text: "등록된 답변이 없습니다.",
-          delay: 520,
-        },
-      ],
-      machineId: null,
-      attachments: [],
-      aiIcon: "/chat_icons/ai_icon4.png",
+  
+  // 질문 전체 일치 확인
+  if (qaMap[normalized]) {
+    return qaMap[normalized];
+  }
+
+  // 키워드 포함 확인
+  const keywords = Object.keys(qaMap);
+  for (const key of keywords) {
+    if (normalized.includes(key)) {
+      return qaMap[key];
     }
-  );
+  }
+
+  // 질문 일치, 키워드 없을 경우 기본 답변 반환
+  return {
+    answer: [
+      {
+        text: "등록된 답변이 없습니다.",
+        delay: 520,
+      },
+    ],
+    machineId: null,
+    attachments: [],
+    aiIcon: "/chat_icons/ai_icon4.png",
+  };
 }
