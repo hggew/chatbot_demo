@@ -427,7 +427,7 @@ const fetchOllamaAnswer = async (userQuestion) => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "gpt-oss:120b-cloud",
+        model: "llama3:8b",
         messages: [
           {
             role: "user",
