@@ -391,7 +391,33 @@ const useChatLogic = (setSelectedMachineId, setActiveMachineVideo) => {
     [setSelectedMachineId, setActiveMachineVideo]
   );
 
-  return { messages, setMessages, isTextLoading, isMediaLoading, playAnswerSequence };
+  return { messages, setMessages, isTextLoading, setIsTextLoading, isMediaLoading, playAnswerSequence };
+};
+
+const fetchOllamaAnswer = async (userQuestion) => {
+  try {
+    const response = await fetch("http://172.21.21.13:11435/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "gpt-oss:120b-cloud", // 또는 사용 중인 모델명 (예: 'mistral', 'gemma')
+        messages: [
+          {
+            role: "user",
+            content: `${userQuestion}\n\n5문장 이내로 답변해.`,
+          },
+        ],
+        stream: false, // 단일 답변을 받기 위해 스트림 비활성화
+      }),
+    });
+
+    if (!response.ok) throw new Error("Ollama API 연결 실패");
+    const data = await response.json();
+    return data.message.content;
+  } catch (error) {
+    console.error("Ollama Error:", error);
+    return "죄송합니다. 현재 로컬 모델 서버에 연결할 수 없습니다.";
+  }
 };
 
 export default function ChatApp() {
@@ -416,7 +442,7 @@ export default function ChatApp() {
 
   const userIcon = "/chat_icons/user_icon.png";
 
-  const { messages, setMessages, isTextLoading, isMediaLoading, playAnswerSequence } =
+  const { messages, setMessages, isTextLoading, setIsTextLoading, isMediaLoading, playAnswerSequence } =
     useChatLogic(setSelectedMachineId, setActiveMachineVideo);
 
   const [agentStatuses, setAgentStatuses] = useState([
@@ -496,11 +522,65 @@ export default function ChatApp() {
     }
   };
 
+  // const handleSend = async () => {
+  //   const q = question.trim();
+  //   const hasFiles = selectedFiles.length > 0;
+  //   if (!q && !hasFiles) return;
+
+  //   if (!hasFirstChatSent) {
+  //     setHasFirstChatSent(true);
+  //     setTimeout(() => {
+  //       setChatList((prev) =>
+  //         prev.some((c) => c.id === 0) ? prev : [HIDDEN_CHAT_ITEM_0, ...prev]);
+  //       setActiveChatId(0);
+  //     }, 5000);
+  //   }
+
+  //   const answerData = getAnswerByQuestion(q);
+  //   const userMessages = [];
+
+  //   if (hasFiles) {
+  //     userMessages.push({
+  //       from: "user",
+  //       type: "file-group",
+  //       files: selectedFiles.map((file, i) => ({
+  //         type: file.type.startsWith("image/") ? "image" : "file",
+  //         url: filePreviews[i].url,
+  //         fileName: file.name,
+  //       })),
+  //     });
+  //   }
+
+  //   if (q) userMessages.push({ from: "user", type: "text", text: q });
+  //   if (userMessages.length) setMessages((prev) => [...prev, ...userMessages]);
+
+  //   setQuestion("");
+  //   clearFiles();
+
+  //   // 질문 데이터에 activeAgentName이 있으면 해당 에이전트 구동
+  //   if (answerData?.activeAgentName) {
+  //     setSpecificAgentRunning(answerData.activeAgentName);
+  //   } else {
+  //     setAllAgentsIdle();
+  //   }
+
+  //   // 질문 데이터에 runDocSearch 값이 있으면 해당 문서를 기반으로 프리뷰 실행
+  //   if (answerData?.runDocSearch) {
+  //     const docData = answerData.runDocSearch === "retrievedDocsQ4" ? retrievedDocsQ4 : retrievedDocsQ5;
+  //     await runDocPreview(docData);
+  //   }
+
+  //   setAnswerCount((prev) => prev + 1);
+  //   playAnswerSequence(answerData, { onComplete: setAllAgentsIdle });
+  // };
+
+
   const handleSend = async () => {
     const q = question.trim();
     const hasFiles = selectedFiles.length > 0;
     if (!q && !hasFiles) return;
 
+    // 첫 질문 시 채팅 목록 추가
     if (!hasFirstChatSent) {
       setHasFirstChatSent(true);
       setTimeout(() => {
@@ -510,9 +590,8 @@ export default function ChatApp() {
       }, 5000);
     }
 
-    const answerData = getAnswerByQuestion(q);
+    // 1. 유저 메시지 UI 업데이트 (기존 로직 유지)
     const userMessages = [];
-
     if (hasFiles) {
       userMessages.push({
         from: "user",
@@ -524,29 +603,51 @@ export default function ChatApp() {
         })),
       });
     }
-
     if (q) userMessages.push({ from: "user", type: "text", text: q });
     if (userMessages.length) setMessages((prev) => [...prev, ...userMessages]);
 
     setQuestion("");
     clearFiles();
 
-    // 변경: answerCount에 의존하던 로직에서 answerData의 속성을 참조하는 로직으로 변경
-    // 변경: 질문 데이터에 activeAgentName이 정의되어 있으면 해당 에이전트 구동
-    if (answerData?.activeAgentName) {
-      setSpecificAgentRunning(answerData.activeAgentName);
-    } else {
-      setAllAgentsIdle();
-    }
+    // 2. 답변 매핑 찾기
+    let answerData = getAnswerByQuestion(q);
 
-    // 변경: 질문 데이터에 runDocSearch 값이 있으면 해당 문서를 기반으로 프리뷰 실행
-    if (answerData?.runDocSearch) {
-      const docData = answerData.runDocSearch === "retrievedDocsQ4" ? retrievedDocsQ4 : retrievedDocsQ5;
-      await runDocPreview(docData);
+    if (answerData) {
+      // 기존 QA 매핑 시나리오 (기존 로직 절대 유지)
+      if (answerData.activeAgentName) setSpecificAgentRunning(answerData.activeAgentName);
+      if (answerData.runDocSearch) {
+        const docData = answerData.runDocSearch === "retrievedDocsQ4" ? retrievedDocsQ4 : retrievedDocsQ5;
+        await runDocPreview(docData);
+      }
+      playAnswerSequence(answerData, { onComplete: setAllAgentsIdle });
+    } else {
+      console.log(`ollama 호출 : ${q}`);
+      // 3. 매핑 데이터가 없는 경우 Ollama 호출
+      setIsTextLoading(true);
+      const aiResponseText = await fetchOllamaAnswer(q);
+
+      // 온점(.)을 기준으로 문장을 분리하고 빈 문자열 제거, 분리된 각 문장에 대해 500ms delay 할당 배열 생성
+      const sentences = aiResponseText
+        .split(/(?<=\.)/g) // 온점을 포함하여 분리
+        .map(s => s.trim())
+        .filter(s => s.length > 0);
+
+      const ollamaFormattedAnswer = {
+        // 첫 문장은 바로 시작, 이후 문장들은 500ms 간격으로 출력되도록 구성
+        answer: sentences.map((sentence, index) => ({
+          text: sentence,
+          delay: index === 0 ? 0 : 500
+        })),
+        aiIcon: "/chat_icons/ai_icon4.png",
+        machineId: null // 머신 비디오/정보 활성화 방지
+      };
+
+      setIsTextLoading(false);
+      // 에이전트/비디오 로직 없이 순수하게 텍스트 시퀀스만 재생
+      playAnswerSequence(ollamaFormattedAnswer, { onComplete: setAllAgentsIdle });
     }
 
     setAnswerCount((prev) => prev + 1);
-    playAnswerSequence(answerData, { onComplete: setAllAgentsIdle });
   };
 
   const handleKeyDown = (e) => {
