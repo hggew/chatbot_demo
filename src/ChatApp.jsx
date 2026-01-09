@@ -423,7 +423,7 @@ const useChatLogic = (setSelectedMachineId, setActiveMachineVideo) => {
 
 const fetchOllamaAnswer = async (userQuestion) => {
   try {
-    const response = await fetch("https://seems-recommendations-silence-eat.trycloudflare.com/api/chat", { // Vercel API Route 상대 경로
+    const response = await fetch("https://scientists-correspondence-oakland-nav.trycloudflare.com/api/chat", { // Vercel API Route 상대 경로
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

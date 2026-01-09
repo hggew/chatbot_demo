@@ -35,11 +35,13 @@
 // }
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' });
+  if (req.method !== "POST")
+    return res.status(405).json({ error: "Method Not Allowed" });
 
   try {
-    const CLOUDFLARE_URL = "https://seems-recommendations-silence-eat.trycloudflare.com";
-    
+    const CLOUDFLARE_URL =
+      "https://scientists-correspondence-oakland-nav.trycloudflare.com";
+
     console.log("Ollama 요청 시작:", req.body.model);
 
     const response = await fetch(`${CLOUDFLARE_URL}/api/chat`, {
@@ -58,13 +60,14 @@ export default async function handler(req, res) {
     }
 
     if (!responseText) {
-      return res.status(500).json({ error: "Ollama로부터 빈 응답을 받았습니다." });
+      return res
+        .status(500)
+        .json({ error: "Ollama로부터 빈 응답을 받았습니다." });
     }
 
     // 2. 받은 텍스트를 JSON으로 파싱하여 전달
     const data = JSON.parse(responseText);
     res.status(200).json(data);
-
   } catch (error) {
     console.error("Vercel Proxy 내부 에러:", error);
     res.status(500).json({ error: error.message });
